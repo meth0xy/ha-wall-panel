@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Saturn Panel</string>
+    <string name="setup_title">Panel address</string>
+    <string name="setup_start">Start</string>
+    <string name="setup_cancel">Cancel</string>
+    <string name="setup_invalid">Enter an http:// or https:// address</string>
+</resources>
