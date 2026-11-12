@@ -25,7 +25,7 @@ Open <http://localhost:8000/index.html?demo>. Add `&locale=de-DE` to see the Ger
 - A line that marks the current time between today's events. It stays in the middle of the agenda, with what is over above it and what comes next below it. After you scroll, the agenda waits 45 seconds and then glides back.
 - Your to-do lists in a column of their own. The column shows only while a task is open or was ticked off in the last six hours. Tap a task to tick it off or back on.
 - A swipeable strip with a welcome or goodbye tile first, then your lights, then your shutters. The arrow on a group tile slides its members out next to it. A colour light's tile glows in the colour the light shows.
-- A tile per phone at the end of the strip. Tap it and the phone rings, so you can find it.
+- A hidden screen with a tile per phone. Tap the clock twice to open it, then tap a tile and that phone rings, so you can find it.
 
 Every five minutes the panel asks Home Assistant to update the calendars and to-do lists. On its own, Home Assistant's Google integration fetches only every 15 to 30 minutes.
 
@@ -78,7 +78,7 @@ Any browser works as well. You lose the haptics and the screen may turn off.
 
 ## Update
 
-Copy all five files again. The panel checks `index.html`, `app.js` and `styles.css` every two minutes. When one has changed, it reloads as soon as nobody has touched the screen for 20 seconds. A change to `config.js` alone shows up after the next reload or app restart.
+Copy all five files again. The panel checks `index.html`, `config.js`, `app.js` and `styles.css` every two minutes. When one has changed, it reloads as soon as nobody has touched the screen for 20 seconds.
 
 ## Configure
 

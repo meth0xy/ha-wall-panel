@@ -671,6 +671,56 @@ h2 { margin: 0; font: inherit; }
 
 .phone.ringing > .ico { animation: ring 900ms ease-in-out infinite; }
 
+.finder {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  padding: var(--pad) var(--pad) 16px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  row-gap: 14px;
+  background: var(--bg);
+  animation: rise 420ms var(--ease-out) both;
+}
+
+.finder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.finder-head h2 {
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.finder-back {
+  border: 1px solid var(--panel-line);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 9px 18px;
+  font: inherit;
+  font-size: 15px;
+}
+
+.finder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 10px;
+  align-content: center;
+}
+
+.finder .dev {
+  height: 150px;
+  padding: 16px;
+}
+
+.finder .dev > .ico { width: 32px; height: 32px; }
+.finder .dev .name { font-size: 19px; }
+.finder .dev .state { font-size: 15px; }
+
 .ripple {
   position: absolute;
   border-radius: 50%;

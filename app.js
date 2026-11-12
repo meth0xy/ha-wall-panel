@@ -23,10 +23,13 @@ const PENDING_TAP_MS = 60 * 1000;
 const PRESS_DELAY_MS = 90;
 /** A phone tile shows that it rings for this long, about the length of a Find My sound. */
 const RINGING_MS = 10 * 1000;
+/** Two taps on the clock within this window open the screen with the ring tiles. */
+const DOUBLE_TAP_MS = 400;
+const FINDER_IDLE_MS = 60 * 1000;
 /** After a manual scroll the agenda waits this long, then glides back to the now line. */
 const AGENDA_HOLD_MS = 45 * 1000;
 /** The panel reloads itself when a deploy changes these files. */
-const UPDATE_FILES = ["index.html", "app.js", "styles.css"];
+const UPDATE_FILES = ["index.html", "config.js", "app.js", "styles.css"];
 const UPDATE_CHECK_MS = 2 * 60 * 1000;
 const IDLE_BEFORE_RELOAD_MS = 20 * 1000;
 
@@ -77,6 +80,8 @@ const TEXT = {
     ring: "Ring",
     ringing: "Ringing …",
     ringFailed: "Not reached",
+    finder: "Find a device",
+    back: "Back",
     conditions: {
       "clear-night": "Clear",
       clear: "Clear",
@@ -137,6 +142,8 @@ const TEXT = {
     ring: "Anklingeln",
     ringing: "Klingelt …",
     ringFailed: "Nicht erreicht",
+    finder: "Gerät suchen",
+    back: "Zurück",
     conditions: {
       "clear-night": "Klar",
       clear: "Klar",
@@ -187,6 +194,7 @@ let expandedKey = null;
 const strip = document.getElementById("strip");
 const agendaEl = document.getElementById("agenda");
 const tasksEl = document.getElementById("tasks");
+const finderEl = document.getElementById("finder");
 
 function pad(n) {
   return String(n).padStart(2, "0");
@@ -372,7 +380,6 @@ function buildStrip() {
       for (const member of cover.members) tiles.push(coverTile([member.id], member.title, 0, cover.key, null));
     }
   }
-  for (const phone of PHONES) tiles.push(phoneTile(phone, i++));
   strip.innerHTML = tiles.join("");
   strip.hidden = !tiles.length;
 }
@@ -481,17 +488,21 @@ function callService(domain, service, entity_id, service_data) {
   send({ type: "call_service", domain, service, target: { entity_id }, service_data });
 }
 
-/** id is a script or a button entity in Home Assistant that makes the phone ring. */
+/**
+ * id is a script or a button entity in Home Assistant that makes the phone ring.
+ * A script is called by its own service, which waits for it to finish, so a failed ring shows.
+ */
 function ringPhone(tile) {
   const id = tile.dataset.phone;
-  const [domain, service] = id.startsWith("button.") ? ["button", "press"] : ["script", "turn_on"];
+  const [domain, object] = id.split(".");
+  const [service, target] = domain === "button" ? ["press", { entity_id: id }] : [object, {}];
   const show = (text, ringing) => {
     tile.classList.toggle("ringing", ringing);
     setText(tile.querySelector(".state"), text);
   };
   const rest = () => show(T.ring, false);
   clearTimeout(tile.ringTimer);
-  const sent = send({ type: "call_service", domain, service, target: { entity_id: id } }, (result) => {
+  const sent = send({ type: "call_service", domain, service, target }, (result) => {
     if (result.success) return;
     clearTimeout(tile.ringTimer);
     show(T.ringFailed, false);
@@ -499,6 +510,26 @@ function ringPhone(tile) {
   });
   show(sent ? T.ringing : T.ringFailed, sent);
   tile.ringTimer = setTimeout(rest, RINGING_MS);
+}
+
+let finderTimer = null;
+
+function keepFinderOpen() {
+  clearTimeout(finderTimer);
+  finderTimer = setTimeout(() => showFinder(false), FINDER_IDLE_MS);
+}
+
+function showFinder(open) {
+  clearTimeout(finderTimer);
+  if (open) {
+    finderEl.innerHTML = `<header class="finder-head">
+        <h2>${T.finder}</h2>
+        <button class="finder-back" data-close>${T.back}</button>
+      </header>
+      <div class="finder-grid">${PHONES.map(phoneTile).join("")}</div>`;
+    keepFinderOpen();
+  }
+  finderEl.hidden = !open;
 }
 
 function houseAway() {
@@ -1030,13 +1061,37 @@ strip.addEventListener("click", (ev) => {
   } else if (tile.dataset.light) {
     haptic("click");
     toggleLight(tile.dataset.light);
-  } else if (tile.dataset.phone) {
-    haptic("heavy");
-    ringPhone(tile);
   } else {
     haptic("heavy");
     tapCovers(tile.dataset.covers.split(" "));
   }
+});
+
+let lastClockTap = 0;
+
+document.getElementById("clock").addEventListener("click", () => {
+  const now = Date.now();
+  if (now - lastClockTap > DOUBLE_TAP_MS || !PHONES.length) {
+    lastClockTap = now;
+    return;
+  }
+  lastClockTap = 0;
+  haptic("tick");
+  showFinder(true);
+});
+
+finderEl.addEventListener("click", (ev) => {
+  keepFinderOpen();
+  if (ev.target.closest("[data-close]")) {
+    haptic("tick");
+    showFinder(false);
+    return;
+  }
+  const tile = ev.target.closest(".dev");
+  if (!tile) return;
+  ripple(tile, ev);
+  haptic("heavy");
+  ringPhone(tile);
 });
 
 agendaEl.addEventListener("pointerdown", holdAgenda);

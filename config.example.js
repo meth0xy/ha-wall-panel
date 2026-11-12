@@ -59,7 +59,7 @@ window.PANEL_CONFIG = {
     goodbye: ["light.kitchen", "switch.bedroom_lamp"],
   },
 
-  // Tiles at the end of the strip that make a lost phone ring. id is a script or a button
+  // Tiles on a hidden screen that make a lost phone ring. Tap the clock twice to open it. id is a script or a button
   // entity that rings it, such as a script that calls icloud.play_sound.
   phones: [
     { id: "script.ring_alex_phone", title: "Alex" },
