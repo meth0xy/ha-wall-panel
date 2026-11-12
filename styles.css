@@ -760,6 +760,24 @@ h2 { margin: 0; font: inherit; }
 .finder .dev .name { font-size: 19px; }
 .finder .dev .state { font-size: 15px; }
 
+.night {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+.night-time {
+  font-size: 128px;
+  font-weight: 200;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+  color: #6e1810;
+  transition: transform 2s ease;
+}
+
 .ripple {
   position: absolute;
   border-radius: 50%;

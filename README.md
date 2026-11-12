@@ -25,13 +25,14 @@ Open <http://localhost:8000/index.html?demo>. Add `&locale=de-DE` to see the Ger
 - A line that marks the current time between today's events. It stays in the middle of the agenda, with what is over above it and what comes next below it. After you scroll, the agenda waits 45 seconds and then glides back.
 - Your to-do lists behind a switch under the date that counts the open tasks. Tap it and the tasks slide in where the agenda was. After 30 seconds without a touch the agenda comes back. The switch shows only while a task is open or was ticked off in the last six hours. Tap a task to tick it off or back on.
 - A swipeable strip with a welcome or goodbye tile first, then your lights, then your shutters. The arrow on a group tile slides its members out next to it. A colour light's tile glows in the colour the light shows.
+- A night mode. From an evening hour until the morning the screen shows only a dim red clock on black. A tap brings the panel back, and the clock returns after 30 seconds without a touch.
 - A hidden screen to find a lost phone, tablet or watch. Tap the clock twice to open it, then tap a tile and that device rings. Back, or a minute without a touch, returns to the panel.
 
 Every five minutes the panel asks Home Assistant to update the calendars and to-do lists. On its own, Home Assistant's Google integration fetches only every 15 to 30 minutes.
 
 <img src="docs/screenshots/lights.png" width="49%" alt="The kitchen light group opened next to its tile"> <img src="docs/screenshots/shutters.png" width="49%" alt="The living room shutters opened next to their tile">
 
-![The hidden find-a-device screen, one phone ringing](docs/screenshots/finder.png)
+<img src="docs/screenshots/finder.png" width="49%" alt="The hidden find-a-device screen, one phone ringing"> <img src="docs/screenshots/night.png" width="49%" alt="The dim red night clock">
 
 ## Set it up
 
@@ -96,6 +97,7 @@ Copy all five files again. The panel checks `index.html`, `config.js`, `app.js` 
 | `todoLists`, `todoSkip` | Which to-do lists show up in the task list. |
 | `lights` | Light and switch tiles. A tile with `members` gets an arrow that slides them out. |
 | `covers` | Shutter tiles. A group with several members moves them together. |
+| `night` | When the dim night clock takes over, as `from` and `to` in `HH:MM`. Leave it out to keep the panel on all night. |
 | `phones` | Tiles on the hidden find-a-device screen. Each names a script or a button entity that rings the device. |
 | `scene` | Lights that the welcome tile turns on and the goodbye tile turns off. Welcome also opens every cover, and goodbye closes every cover. |
 

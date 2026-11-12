@@ -13,6 +13,7 @@ const LIGHTS = CONFIG.lights || [];
 const COVERS = CONFIG.covers || [];
 const SCENE = CONFIG.scene || null;
 const PHONES = CONFIG.phones || [];
+const NIGHT = CONFIG.night || null;
 /** Home Assistant asks Google only every 15 to 30 minutes on its own, so the panel nudges it. */
 const GOOGLE_REFRESH_MS = 5 * 60 * 1000;
 /** Ticked-off tasks stay in the column this long; with nothing open, the column then goes away. */
@@ -30,6 +31,8 @@ const FINDER_IDLE_MS = 60 * 1000;
 const AGENDA_HOLD_MS = 45 * 1000;
 /** The task list slides back to the calendar after this long without a touch. */
 const TASKS_IDLE_MS = 30 * 1000;
+/** At night the dim clock comes back after this long without a touch. */
+const NIGHT_IDLE_MS = 30 * 1000;
 /** The panel reloads itself when a deploy changes these files. */
 const UPDATE_FILES = ["index.html", "config.js", "app.js", "styles.css"];
 const UPDATE_CHECK_MS = 2 * 60 * 1000;
@@ -202,6 +205,7 @@ const agendaEl = document.getElementById("agenda");
 const tasksEl = document.getElementById("tasks");
 const finderEl = document.getElementById("finder");
 const switchEl = document.getElementById("switch");
+const nightEl = document.getElementById("night");
 const stageEl = agendaEl.parentElement;
 
 function pad(n) {
@@ -257,8 +261,38 @@ function haptic(kind) {
 
 let lastMinute = -1;
 
+function minuteOfDay(hhmmText) {
+  const [h, m] = hhmmText.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function isNight(now) {
+  if (!NIGHT) return false;
+  const from = minuteOfDay(NIGHT.from);
+  const to = minuteOfDay(NIGHT.to);
+  const minute = now.getHours() * 60 + now.getMinutes();
+  return from <= to ? minute >= from && minute < to : minute >= from || minute < to;
+}
+
+/**
+ * Only a tap on the dim clock hides it. Hiding it from the clock tick could land the same tap's
+ * click on a tile underneath.
+ */
+function updateNight(now) {
+  const night = isNight(now);
+  if (night && nightEl.hidden && Date.now() - lastTouch > NIGHT_IDLE_MS) nightEl.hidden = false;
+  else if (!night) nightEl.hidden = true;
+  if (nightEl.hidden) return;
+  const time = nightEl.firstElementChild;
+  setText(time, hhmm(now));
+  // A slow drift, so the same pixels are not lit all night.
+  const m = now.getHours() * 60 + now.getMinutes();
+  time.style.transform = `translate(${((m % 7) - 3) * 8}px, ${((m % 5) - 2) * 8}px)`;
+}
+
 function tickClock() {
   const now = new Date();
+  updateNight(now);
   document.getElementById("time").textContent = hhmm(now);
   document.getElementById("date").textContent = now.toLocaleDateString(LOCALE, {
     weekday: "long",
@@ -1127,6 +1161,11 @@ finderEl.addEventListener("click", (ev) => {
 });
 
 agendaEl.addEventListener("pointerdown", holdAgenda);
+
+nightEl.addEventListener("click", () => {
+  lastTouch = Date.now();
+  nightEl.hidden = true;
+});
 
 switchEl.addEventListener("click", () => {
   haptic("tick");

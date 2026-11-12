@@ -59,6 +59,10 @@ window.PANEL_CONFIG = {
     goodbye: ["light.kitchen", "switch.bedroom_lamp"],
   },
 
+  // From this time until the next morning the screen shows only a dim red clock.
+  // A tap brings the panel back, and the clock returns after 30 seconds without a touch.
+  night: { from: "20:00", to: "06:30" },
+
   // Tiles on a hidden screen that make a lost phone ring. Tap the clock twice to open it. id is a script or a button
   // entity that rings it, such as a script that calls icloud.play_sound.
   phones: [

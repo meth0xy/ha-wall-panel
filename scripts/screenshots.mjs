@@ -17,6 +17,7 @@ const SHOTS = [
   { name: "lights", expand: "light.kitchen" },
   { name: "shutters", expand: "living" },
   { name: "finder", finder: true },
+  { name: "night", at: "2026-11-10T23:12:00Z" },
 ];
 
 await mkdir(OUT, { recursive: true });
@@ -36,7 +37,7 @@ for (const shot of SHOTS) {
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.clock.setFixedTime(NOW);
+  await page.clock.setFixedTime(shot.at ? new Date(shot.at) : NOW);
   await page.goto(`${ORIGIN}/index.html?demo`);
   await page.waitForSelector("#tasks .task", { state: "attached" });
   if (shot.expand) await page.click(`[data-expand="${shot.expand}"]`);
