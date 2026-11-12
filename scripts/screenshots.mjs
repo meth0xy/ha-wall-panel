@@ -16,6 +16,7 @@ const SHOTS = [
   { name: "panel" },
   { name: "lights", expand: "light.kitchen" },
   { name: "shutters", expand: "living" },
+  { name: "finder", finder: true },
 ];
 
 await mkdir(OUT, { recursive: true });
@@ -39,6 +40,11 @@ for (const shot of SHOTS) {
   await page.goto(`${ORIGIN}/index.html?demo`);
   await page.waitForSelector("#tasks .task");
   if (shot.expand) await page.click(`[data-expand="${shot.expand}"]`);
+  if (shot.finder) {
+    await page.dblclick("#time");
+    await page.waitForTimeout(600);
+    await page.click("#finder .phone");
+  }
   await page.waitForTimeout(1500);
   if (errors.length) throw new Error(`${shot.name}: ${errors.join("; ")}`);
   await page.screenshot({ path: new URL(`${shot.name}.png`, OUT).pathname });

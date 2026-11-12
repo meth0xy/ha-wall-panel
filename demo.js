@@ -51,6 +51,8 @@
     phones: [
       { id: "script.ring_alex_phone", title: "Alex's phone" },
       { id: "button.sam_phone_play_sound", title: "Sam's phone" },
+      { id: "button.family_ipad_play_sound", title: "iPad" },
+      { id: "button.sam_watch_play_sound", title: "Sam's watch" },
     ],
   };
 

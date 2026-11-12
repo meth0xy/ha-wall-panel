@@ -25,11 +25,13 @@ Open <http://localhost:8000/index.html?demo>. Add `&locale=de-DE` to see the Ger
 - A line that marks the current time between today's events. It stays in the middle of the agenda, with what is over above it and what comes next below it. After you scroll, the agenda waits 45 seconds and then glides back.
 - Your to-do lists in a column of their own. The column shows only while a task is open or was ticked off in the last six hours. Tap a task to tick it off or back on.
 - A swipeable strip with a welcome or goodbye tile first, then your lights, then your shutters. The arrow on a group tile slides its members out next to it. A colour light's tile glows in the colour the light shows.
-- A hidden screen with a tile per phone. Tap the clock twice to open it, then tap a tile and that phone rings, so you can find it.
+- A hidden screen to find a lost phone, tablet or watch. Tap the clock twice to open it, then tap a tile and that device rings. Back, or a minute without a touch, returns to the panel.
 
 Every five minutes the panel asks Home Assistant to update the calendars and to-do lists. On its own, Home Assistant's Google integration fetches only every 15 to 30 minutes.
 
 <img src="docs/screenshots/lights.png" width="49%" alt="The kitchen light group opened next to its tile"> <img src="docs/screenshots/shutters.png" width="49%" alt="The living room shutters opened next to their tile">
+
+![The hidden find-a-device screen, one phone ringing](docs/screenshots/finder.png)
 
 ## Set it up
 
@@ -94,8 +96,15 @@ Copy all five files again. The panel checks `index.html`, `config.js`, `app.js` 
 | `todoLists`, `todoSkip` | Which to-do lists show up in the task column. |
 | `lights` | Light and switch tiles. A tile with `members` gets an arrow that slides them out. |
 | `covers` | Shutter tiles. A group with several members moves them together. |
-| `phones` | Tiles that make a lost phone ring. Each names a script or a button entity that rings it. |
+| `phones` | Tiles on the hidden find-a-device screen. Each names a script or a button entity that rings the device. |
 | `scene` | Lights that the welcome tile turns on and the goodbye tile turns off. Welcome also opens every cover, and goodbye closes every cover. |
+
+### Find a lost device
+
+Each tile presses a button entity that plays a sound on the device, or runs a script that does.
+
+- **Android:** the [GoogleFindMy-HA](https://github.com/BSkando/GoogleFindMy-HA) custom integration adds a play-sound button per device in Google Find My Device. Its token lasts until you change your Google password.
+- **iPhone, iPad, Apple Watch:** the core **Apple iCloud** integration adds a play-sound button per device. Turn on family devices to get a child's watch. Apple drops the session after a few hours, so press the button from an automation that first runs `homeassistant.reload_config_entry` on the iCloud entry. That logs in again without a code. The reload needs an admin, so a non-admin panel account starts the automation through a script that fires an event.
 
 The panel text exists in English and German. Any other language falls back to English. To add one, add a block next to `en` and `de` in the `TEXT` table at the top of `app.js`.
 
