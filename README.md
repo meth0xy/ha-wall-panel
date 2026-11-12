@@ -23,7 +23,7 @@ Open <http://localhost:8000/index.html?demo>. Add `&locale=de-DE` to see the Ger
 - Clock, date, weather and the indoor temperature and humidity on the left.
 - The next seven days from all your calendars in one list. A coloured initial marks whose event it is.
 - A line that marks the current time between today's events. It stays in the middle of the agenda, with what is over above it and what comes next below it. After you scroll, the agenda waits 45 seconds and then glides back.
-- Your to-do lists in a column of their own. The column shows only while a task is open or was ticked off in the last six hours. Tap a task to tick it off or back on.
+- Your to-do lists behind a switch under the date that counts the open tasks. Tap it and the tasks slide in where the agenda was. After 30 seconds without a touch the agenda comes back. The switch shows only while a task is open or was ticked off in the last six hours. Tap a task to tick it off or back on.
 - A swipeable strip with a welcome or goodbye tile first, then your lights, then your shutters. The arrow on a group tile slides its members out next to it. A colour light's tile glows in the colour the light shows.
 - A hidden screen to find a lost phone, tablet or watch. Tap the clock twice to open it, then tap a tile and that device rings. Back, or a minute without a touch, returns to the panel.
 
@@ -93,7 +93,7 @@ Copy all five files again. The panel checks `index.html`, `config.js`, `app.js` 
 | `room` | Indoor `temperature` and `humidity` sensors. |
 | `calendars` | Calendars merged into the agenda, each with an initial, a name and a colour. |
 | `agendaDays` | How many days the agenda shows. The default is 7. |
-| `todoLists`, `todoSkip` | Which to-do lists show up in the task column. |
+| `todoLists`, `todoSkip` | Which to-do lists show up in the task list. |
 | `lights` | Light and switch tiles. A tile with `members` gets an arrow that slides them out. |
 | `covers` | Shutter tiles. A group with several members moves them together. |
 | `phones` | Tiles on the hidden find-a-device screen. Each names a script or a button entity that rings the device. |

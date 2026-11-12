@@ -12,11 +12,14 @@
 </head>
 <body>
   <main class="app">
-    <div class="top no-tasks">
+    <div class="top">
       <aside class="info">
-        <div id="clock">
-          <div id="time" class="time">--:--</div>
-          <div id="date" class="date">—</div>
+        <div>
+          <div id="clock">
+            <div id="time" class="time">--:--</div>
+            <div id="date" class="date">—</div>
+          </div>
+          <button id="switch" class="switch" hidden></button>
         </div>
         <div class="weather">
           <div class="weather-temp"><span id="temp">—</span>°</div>
@@ -26,8 +29,10 @@
           </div>
         </div>
       </aside>
-      <section id="agenda" class="agenda"></section>
-      <section id="tasks" class="tasks"></section>
+      <div class="stage">
+        <section id="agenda" class="agenda"></section>
+        <section id="tasks" class="tasks"></section>
+      </div>
     </div>
     <div id="strip" class="strip"></div>
   </main>

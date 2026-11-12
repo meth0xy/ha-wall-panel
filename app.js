@@ -28,6 +28,8 @@ const DOUBLE_TAP_MS = 400;
 const FINDER_IDLE_MS = 60 * 1000;
 /** After a manual scroll the agenda waits this long, then glides back to the now line. */
 const AGENDA_HOLD_MS = 45 * 1000;
+/** The task list slides back to the calendar after this long without a touch. */
+const TASKS_IDLE_MS = 30 * 1000;
 /** The panel reloads itself when a deploy changes these files. */
 const UPDATE_FILES = ["index.html", "config.js", "app.js", "styles.css"];
 const UPDATE_CHECK_MS = 2 * 60 * 1000;
@@ -64,6 +66,7 @@ const TEXT = {
     dueTomorrow: "tomorrow",
     open: (n) => `${n} open`,
     allDone: "all done",
+    taskCount: (n) => (n === 1 ? "1 task" : `${n} tasks`),
     on: "On",
     off: "Off",
     offline: "Offline",
@@ -126,6 +129,7 @@ const TEXT = {
     dueTomorrow: "morgen",
     open: (n) => `${n} offen`,
     allDone: "alles erledigt",
+    taskCount: (n) => (n === 1 ? "1 Aufgabe" : `${n} Aufgaben`),
     on: "An",
     off: "Aus",
     offline: "Offline",
@@ -175,6 +179,8 @@ const SHUTTER = svg("ico", '<rect x="3" y="3" width="18" height="18" rx="2.5"/><
 const HI = svg("ico hi", '<path d="M15 21h4a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-4"/><path d="M10 8l-4 4 4 4"/><path d="M15 12H6"/>', 1.8);
 const BYE = svg("ico bye", '<path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4"/><path d="M14 16l4-4-4-4"/><path d="M9 12h9"/>', 1.8);
 const PHONE = svg("ico", '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/><path d="M2.5 9.5a4 4 0 0 0 0 5"/><path d="M21.5 9.5a4 4 0 0 1 0 5"/>');
+const TASKS_ICON = svg("ico", '<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><path d="M8 12.5l3 3 5-6"/>');
+const CALENDAR_ICON = svg("ico", '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>');
 const CHEVRON = svg("", '<path d="M6 9l6 6 6-6"/>', 2.4);
 const CHECK = svg("", '<path d="M5 12.5l4.5 4.5L19 7.5"/>', 3.2);
 
@@ -195,6 +201,8 @@ const strip = document.getElementById("strip");
 const agendaEl = document.getElementById("agenda");
 const tasksEl = document.getElementById("tasks");
 const finderEl = document.getElementById("finder");
+const switchEl = document.getElementById("switch");
+const stageEl = agendaEl.parentElement;
 
 function pad(n) {
   return String(n).padStart(2, "0");
@@ -799,13 +807,31 @@ function completedAt(item) {
   return tap && tap.status === "completed" ? tap.at : 0;
 }
 
-/** The column only exists while something is open or was ticked off in the last hours. */
-function showTasks(visible) {
-  const top = tasksEl.parentElement;
-  if (top.classList.contains("no-tasks") !== visible) return;
-  top.classList.toggle("no-tasks", !visible);
-  centerNow();
-  updateFade(agendaEl);
+const taskSummary = { any: false, open: 0, overdue: false };
+let showingTasks = false;
+let tasksTimer = 0;
+
+/** The calendar and the task list share one place; the switch under the date flips between them. */
+function showView(tasks) {
+  clearTimeout(tasksTimer);
+  showingTasks = tasks && taskSummary.any;
+  stageEl.classList.toggle("show-tasks", showingTasks);
+  if (showingTasks) {
+    tasksTimer = setTimeout(() => showView(false), TASKS_IDLE_MS);
+    updateFade(tasksEl);
+  } else {
+    centerNow();
+  }
+  paintSwitch();
+}
+
+function paintSwitch() {
+  const { any, open, overdue } = taskSummary;
+  switchEl.hidden = !any;
+  switchEl.classList.toggle("overdue", overdue && !showingTasks);
+  switchEl.innerHTML = showingTasks
+    ? `${CALENDAR_ICON}<span>${T.calendar}</span>`
+    : `${TASKS_ICON}<span>${open ? T.taskCount(open) : T.tasks}</span>`;
 }
 
 function renderTasks() {
@@ -816,8 +842,14 @@ function renderTasks() {
   );
   const open = items.filter((t) => t.status === "needs_action");
   const done = items.filter((t) => t.status === "completed" && now - t.doneAt < DONE_VISIBLE_MS);
-  showTasks(open.length + done.length > 0);
-  if (!open.length && !done.length) {
+  Object.assign(taskSummary, {
+    any: open.length + done.length > 0,
+    open: open.length,
+    overdue: open.some((t) => dueLabel(t.due)?.cls === "over"),
+  });
+  if (showingTasks && !taskSummary.any) showView(false);
+  else paintSwitch();
+  if (!taskSummary.any) {
     tasksEl.innerHTML = "";
     return;
   }
@@ -1095,6 +1127,15 @@ finderEl.addEventListener("click", (ev) => {
 });
 
 agendaEl.addEventListener("pointerdown", holdAgenda);
+
+switchEl.addEventListener("click", () => {
+  haptic("tick");
+  showView(!showingTasks);
+});
+
+tasksEl.addEventListener("pointerdown", () => {
+  if (showingTasks) showView(true);
+});
 
 tasksEl.addEventListener("click", (ev) => {
   const row = ev.target.closest("[data-task]");

@@ -56,13 +56,61 @@ h2 { margin: 0; font: inherit; }
 .top {
   min-height: 0;
   display: grid;
-  grid-template-columns: 172px minmax(0, 1fr) minmax(0, 0.7fr);
+  grid-template-columns: 172px minmax(0, 1fr);
   gap: 20px;
 }
 
-/* Without open or freshly ticked-off tasks the agenda takes the whole width */
-.top.no-tasks { grid-template-columns: 172px minmax(0, 1fr); }
-.top.no-tasks .tasks { display: none; }
+.stage {
+  min-height: 0;
+  display: grid;
+  overflow: hidden;
+}
+
+.stage > .agenda,
+.stage > .tasks {
+  grid-area: 1 / 1;
+  transition: opacity 280ms ease, transform 480ms var(--ease-out), visibility 0s;
+}
+
+/* The hidden side keeps its size, so the agenda can stay scrolled to the now line behind the tasks. */
+.stage > .tasks,
+.stage.show-tasks > .agenda {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 480ms var(--ease-out), visibility 0s 480ms;
+}
+
+.stage > .tasks { transform: translateX(36px); }
+.stage.show-tasks > .agenda { transform: translateX(-36px); }
+
+.stage.show-tasks > .tasks {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition: opacity 280ms ease, transform 480ms var(--ease-out), visibility 0s;
+}
+
+.switch {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px 7px 10px;
+  border: 1px solid var(--panel-line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 240ms ease, transform 320ms var(--spring);
+}
+
+.switch:active { transform: scale(0.95); }
+.switch .ico { width: 16px; height: 16px; color: var(--muted); }
+.switch.overdue { border-color: var(--alert-line); }
+.switch.overdue .ico { color: var(--alert); }
 
 .info {
   display: flex;
@@ -310,29 +358,20 @@ h2 { margin: 0; font: inherit; }
 
 .who.small .badge + .badge { margin-left: -3px; }
 
-/* Sharing the width with the task column: a size smaller, so titles still fit */
-.top:not(.no-tasks) .ev { grid-template-columns: 46px minmax(0, 1fr) auto; column-gap: 8px; }
-.top:not(.no-tasks) .now { grid-template-columns: 46px minmax(0, 1fr); column-gap: 8px; }
-.top:not(.no-tasks) .ev .t { font-size: 15px; }
-.top:not(.no-tasks) .ev .title { font-size: 17px; }
-.top:not(.no-tasks) .ev .sub { font-size: 13px; }
-.top:not(.no-tasks) .badge { width: 19px; height: 19px; font-size: 11px; }
-.top:not(.no-tasks) .chip { font-size: 13px; }
-
 .ev.next .t,
 .ev.next .soon { color: var(--warm); }
 
 .task {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  column-gap: 10px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  column-gap: 12px;
   align-items: start;
-  padding: 5px 0;
+  padding: 6px 0;
 }
 
 .box {
-  width: 18px;
-  height: 18px;
+  width: 21px;
+  height: 21px;
   margin-top: 1px;
   border-radius: 50%;
   border: 1.6px solid rgba(255, 255, 255, 0.34);
@@ -357,7 +396,7 @@ h2 { margin: 0; font: inherit; }
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.25;
   transition: color 240ms ease;
 }
@@ -365,7 +404,7 @@ h2 { margin: 0; font: inherit; }
 .task .due {
   display: block;
   margin-top: 1px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 

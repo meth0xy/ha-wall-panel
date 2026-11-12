@@ -38,7 +38,7 @@ for (const shot of SHOTS) {
   page.on("pageerror", (error) => errors.push(error.message));
   await page.clock.setFixedTime(NOW);
   await page.goto(`${ORIGIN}/index.html?demo`);
-  await page.waitForSelector("#tasks .task");
+  await page.waitForSelector("#tasks .task", { state: "attached" });
   if (shot.expand) await page.click(`[data-expand="${shot.expand}"]`);
   if (shot.finder) {
     await page.dblclick("#time");
