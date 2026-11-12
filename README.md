@@ -32,6 +32,8 @@ Every five minutes the panel asks Home Assistant to update the calendars and to-
 
 <img src="docs/screenshots/lights.png" width="49%" alt="The kitchen light group opened next to its tile"> <img src="docs/screenshots/shutters.png" width="49%" alt="The living room shutters opened next to their tile">
 
+<img src="docs/screenshots/tasks.png" width="49%" alt="The task list in place of the agenda, opened from the switch under the date">
+
 <img src="docs/screenshots/finder.png" width="49%" alt="The hidden find-a-device screen, one phone ringing"> <img src="docs/screenshots/night.png" width="49%" alt="The dim red night clock">
 
 ## Set it up

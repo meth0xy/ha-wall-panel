@@ -16,6 +16,7 @@ const SHOTS = [
   { name: "panel" },
   { name: "lights", expand: "light.kitchen" },
   { name: "shutters", expand: "living" },
+  { name: "tasks", tasks: true },
   { name: "finder", finder: true },
   { name: "night", at: "2026-11-10T23:12:00Z" },
 ];
@@ -41,6 +42,7 @@ for (const shot of SHOTS) {
   await page.goto(`${ORIGIN}/index.html?demo`);
   await page.waitForSelector("#tasks .task", { state: "attached" });
   if (shot.expand) await page.click(`[data-expand="${shot.expand}"]`);
+  if (shot.tasks) await page.click("#switch");
   if (shot.finder) {
     await page.dblclick("#time");
     await page.waitForTimeout(600);
