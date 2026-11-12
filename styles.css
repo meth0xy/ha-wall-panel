@@ -661,6 +661,16 @@ h2 { margin: 0; font: inherit; }
 .scene.welcome > .ico,
 .scene.welcome .state { color: var(--warm); }
 
+.phone.ringing {
+  border-color: var(--warm-line);
+  color: var(--warm-text);
+}
+
+.phone.ringing > .ico,
+.phone.ringing .state { color: var(--warm); }
+
+.phone.ringing > .ico { animation: ring 900ms ease-in-out infinite; }
+
 .ripple {
   position: absolute;
   border-radius: 50%;
@@ -689,6 +699,12 @@ h2 { margin: 0; font: inherit; }
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+@keyframes ring {
+  0%, 60%, 100% { transform: rotate(0); }
+  10%, 30%, 50% { transform: rotate(-9deg); }
+  20%, 40% { transform: rotate(9deg); }
 }
 
 @keyframes sweep {

@@ -12,6 +12,7 @@ const AGENDA_DAYS = CONFIG.agendaDays || 7;
 const LIGHTS = CONFIG.lights || [];
 const COVERS = CONFIG.covers || [];
 const SCENE = CONFIG.scene || null;
+const PHONES = CONFIG.phones || [];
 /** Home Assistant asks Google only every 15 to 30 minutes on its own, so the panel nudges it. */
 const GOOGLE_REFRESH_MS = 5 * 60 * 1000;
 /** Ticked-off tasks stay in the column this long; with nothing open, the column then goes away. */
@@ -20,6 +21,8 @@ const DONE_VISIBLE_MS = 6 * 60 * 60 * 1000;
 const PENDING_TAP_MS = 60 * 1000;
 /** Pressed feedback waits this long, so a finger that starts a swipe never squeezes a tile. */
 const PRESS_DELAY_MS = 90;
+/** A phone tile shows that it rings for this long, about the length of a Find My sound. */
+const RINGING_MS = 10 * 1000;
 /** After a manual scroll the agenda waits this long, then glides back to the now line. */
 const AGENDA_HOLD_MS = 45 * 1000;
 /** The panel reloads itself when a deploy changes these files. */
@@ -71,6 +74,9 @@ const TEXT = {
     goodbye: "Goodbye",
     goodbyeHint: "All closed & off",
     expand: "Show each",
+    ring: "Ring",
+    ringing: "Ringing …",
+    ringFailed: "Not reached",
     conditions: {
       "clear-night": "Clear",
       clear: "Clear",
@@ -128,6 +134,9 @@ const TEXT = {
     goodbye: "Tschüss",
     goodbyeHint: "Alles zu & aus",
     expand: "Einzeln",
+    ring: "Anklingeln",
+    ringing: "Klingelt …",
+    ringFailed: "Nicht erreicht",
     conditions: {
       "clear-night": "Klar",
       clear: "Klar",
@@ -158,6 +167,7 @@ const BULB = svg("ico", '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 
 const SHUTTER = svg("ico", '<rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 8h18M3 12h18M3 16h18"/>', 1.6);
 const HI = svg("ico hi", '<path d="M15 21h4a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-4"/><path d="M10 8l-4 4 4 4"/><path d="M15 12H6"/>', 1.8);
 const BYE = svg("ico bye", '<path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4"/><path d="M14 16l4-4-4-4"/><path d="M9 12h9"/>', 1.8);
+const PHONE = svg("ico", '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/><path d="M2.5 9.5a4 4 0 0 0 0 5"/><path d="M21.5 9.5a4 4 0 0 1 0 5"/>');
 const CHEVRON = svg("", '<path d="M6 9l6 6 6-6"/>', 2.4);
 const CHECK = svg("", '<path d="M5 12.5l4.5 4.5L19 7.5"/>', 3.2);
 
@@ -335,6 +345,13 @@ function coverTile(ids, title, i, groupKey, expandKey) {
   </div>`;
 }
 
+function phoneTile(phone, i) {
+  return `<div class="dev phone" data-phone="${phone.id}" style="--i:${i}">
+    ${PHONE}
+    <span class="label"><span class="name">${esc(phone.title)}</span><span class="state">${T.ring}</span></span>
+  </div>`;
+}
+
 function buildStrip() {
   let i = 0;
   const tiles = [];
@@ -355,6 +372,7 @@ function buildStrip() {
       for (const member of cover.members) tiles.push(coverTile([member.id], member.title, 0, cover.key, null));
     }
   }
+  for (const phone of PHONES) tiles.push(phoneTile(phone, i++));
   strip.innerHTML = tiles.join("");
   strip.hidden = !tiles.length;
 }
@@ -461,6 +479,26 @@ function send(msg, onResult, onEvent) {
 
 function callService(domain, service, entity_id, service_data) {
   send({ type: "call_service", domain, service, target: { entity_id }, service_data });
+}
+
+/** id is a script or a button entity in Home Assistant that makes the phone ring. */
+function ringPhone(tile) {
+  const id = tile.dataset.phone;
+  const [domain, service] = id.startsWith("button.") ? ["button", "press"] : ["script", "turn_on"];
+  const show = (text, ringing) => {
+    tile.classList.toggle("ringing", ringing);
+    setText(tile.querySelector(".state"), text);
+  };
+  const rest = () => show(T.ring, false);
+  clearTimeout(tile.ringTimer);
+  const sent = send({ type: "call_service", domain, service, target: { entity_id: id } }, (result) => {
+    if (result.success) return;
+    clearTimeout(tile.ringTimer);
+    show(T.ringFailed, false);
+    tile.ringTimer = setTimeout(rest, RINGING_MS);
+  });
+  show(sent ? T.ringing : T.ringFailed, sent);
+  tile.ringTimer = setTimeout(rest, RINGING_MS);
 }
 
 function houseAway() {
@@ -992,6 +1030,9 @@ strip.addEventListener("click", (ev) => {
   } else if (tile.dataset.light) {
     haptic("click");
     toggleLight(tile.dataset.light);
+  } else if (tile.dataset.phone) {
+    haptic("heavy");
+    ringPhone(tile);
   } else {
     haptic("heavy");
     tapCovers(tile.dataset.covers.split(" "));

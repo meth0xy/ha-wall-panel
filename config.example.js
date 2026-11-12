@@ -58,4 +58,11 @@ window.PANEL_CONFIG = {
     welcome: ["light.kitchen"],
     goodbye: ["light.kitchen", "switch.bedroom_lamp"],
   },
+
+  // Tiles at the end of the strip that make a lost phone ring. id is a script or a button
+  // entity that rings it, such as a script that calls icloud.play_sound.
+  phones: [
+    { id: "script.ring_alex_phone", title: "Alex" },
+    { id: "button.sam_phone_play_sound", title: "Sam" },
+  ],
 };

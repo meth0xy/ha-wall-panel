@@ -48,6 +48,10 @@
       welcome: ["light.kitchen", "light.living_room"],
       goodbye: ["light.kitchen", "light.living_room", "switch.bedroom_lamp", "light.desk"],
     },
+    phones: [
+      { id: "script.ring_alex_phone", title: "Alex's phone" },
+      { id: "button.sam_phone_play_sound", title: "Sam's phone" },
+    ],
   };
 
   const GROUPS = { "light.kitchen": ["light.kitchen_counter", "light.kitchen_ceiling"] };

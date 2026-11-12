@@ -25,6 +25,7 @@ Open <http://localhost:8000/index.html?demo>. Add `&locale=de-DE` to see the Ger
 - A line that marks the current time between today's events. It stays in the middle of the agenda, with what is over above it and what comes next below it. After you scroll, the agenda waits 45 seconds and then glides back.
 - Your to-do lists in a column of their own. The column shows only while a task is open or was ticked off in the last six hours. Tap a task to tick it off or back on.
 - A swipeable strip with a welcome or goodbye tile first, then your lights, then your shutters. The arrow on a group tile slides its members out next to it. A colour light's tile glows in the colour the light shows.
+- A tile per phone at the end of the strip. Tap it and the phone rings, so you can find it.
 
 Every five minutes the panel asks Home Assistant to update the calendars and to-do lists. On its own, Home Assistant's Google integration fetches only every 15 to 30 minutes.
 
@@ -93,6 +94,7 @@ Copy all five files again. The panel checks `index.html`, `app.js` and `styles.c
 | `todoLists`, `todoSkip` | Which to-do lists show up in the task column. |
 | `lights` | Light and switch tiles. A tile with `members` gets an arrow that slides them out. |
 | `covers` | Shutter tiles. A group with several members moves them together. |
+| `phones` | Tiles that make a lost phone ring. Each names a script or a button entity that rings it. |
 | `scene` | Lights that the welcome tile turns on and the goodbye tile turns off. Welcome also opens every cover, and goodbye closes every cover. |
 
 The panel text exists in English and German. Any other language falls back to English. To add one, add a block next to `en` and `de` in the `TEXT` table at the top of `app.js`.
