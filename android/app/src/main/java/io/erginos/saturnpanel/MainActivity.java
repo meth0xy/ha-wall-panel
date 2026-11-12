@@ -104,6 +104,7 @@ public class MainActivity extends Activity {
             webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             webView.setWebViewClient(new WebViewClient());
             webView.addJavascriptInterface(new Haptics(getSystemService(Vibrator.class)), "Haptics");
+            webView.addJavascriptInterface(new Backlight(this), "Backlight");
         }
         setContentView(webView);
         webView.loadUrl(url);
@@ -184,6 +185,25 @@ public class MainActivity extends Activity {
                     effect = VibrationEffect.createOneShot(160, 255);
             }
             vibrator.vibrate(effect);
+        }
+    }
+
+    /** Lets the night clock turn the backlight down: on an LCD, black pixels alone still glow. */
+    static final class Backlight {
+        private static final float NIGHT_BRIGHTNESS = 0.01f;
+        private final Activity activity;
+
+        Backlight(Activity activity) {
+            this.activity = activity;
+        }
+
+        @JavascriptInterface
+        public void dim(boolean dim) {
+            activity.runOnUiThread(() -> {
+                WindowManager.LayoutParams params = activity.getWindow().getAttributes();
+                params.screenBrightness = dim ? NIGHT_BRIGHTNESS : WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+                activity.getWindow().setAttributes(params);
+            });
         }
     }
 

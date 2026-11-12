@@ -266,6 +266,12 @@ function minuteOfDay(hhmmText) {
   return h * 60 + m;
 }
 
+/** The Android app turns the backlight down with the night clock; a browser has no Backlight. */
+function setNight(on) {
+  nightEl.hidden = !on;
+  window.Backlight?.dim(on);
+}
+
 function isNight(now) {
   if (!NIGHT) return false;
   const from = minuteOfDay(NIGHT.from);
@@ -280,8 +286,8 @@ function isNight(now) {
  */
 function updateNight(now) {
   const night = isNight(now);
-  if (night && nightEl.hidden && Date.now() - lastTouch > NIGHT_IDLE_MS) nightEl.hidden = false;
-  else if (!night) nightEl.hidden = true;
+  if (night && nightEl.hidden && Date.now() - lastTouch > NIGHT_IDLE_MS) setNight(true);
+  else if (!night && !nightEl.hidden) setNight(false);
   if (nightEl.hidden) return;
   const time = nightEl.firstElementChild;
   setText(time, hhmm(now));
@@ -1164,7 +1170,7 @@ agendaEl.addEventListener("pointerdown", holdAgenda);
 
 nightEl.addEventListener("click", () => {
   lastTouch = Date.now();
-  nightEl.hidden = true;
+  setNight(false);
 });
 
 switchEl.addEventListener("click", () => {
