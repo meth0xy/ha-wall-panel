@@ -4,6 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,6 +40,7 @@ public class MainActivity extends Activity {
     private static final String EXAMPLE_URL = "http://homeassistant.local:8123/local/panel/index.html";
 
     private WebView webView;
+    private Backlight backlight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +64,13 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         hideSystemBars();
+        if (backlight != null) backlight.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (backlight != null) backlight.stop();
     }
 
     @Override
@@ -104,7 +116,9 @@ public class MainActivity extends Activity {
             webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             webView.setWebViewClient(new WebViewClient());
             webView.addJavascriptInterface(new Haptics(getSystemService(Vibrator.class)), "Haptics");
-            webView.addJavascriptInterface(new Backlight(this), "Backlight");
+            backlight = new Backlight(this);
+            backlight.start();
+            webView.addJavascriptInterface(backlight, "Backlight");
         }
         setContentView(webView);
         webView.loadUrl(url);
@@ -188,13 +202,44 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Lets the night clock turn the backlight down: on an LCD, black pixels alone still glow. */
-    static final class Backlight {
-        private static final float NIGHT_BRIGHTNESS = 0.01f;
+    /**
+     * Lets the night clock turn the backlight down, since black pixels on an LCD still glow, and
+     * tells the panel how bright the room is, so a switched-on light brings the panel back.
+     */
+    static final class Backlight implements SensorEventListener {
+        private static final float NIGHT_BRIGHTNESS = 0.03f;
         private final Activity activity;
+        private final SensorManager sensors;
+        private final Sensor light;
+        private volatile float lux = -1;
 
         Backlight(Activity activity) {
             this.activity = activity;
+            sensors = activity.getSystemService(SensorManager.class);
+            light = sensors == null ? null : sensors.getDefaultSensor(Sensor.TYPE_LIGHT);
+        }
+
+        void start() {
+            if (light != null) sensors.registerListener(this, light, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        void stop() {
+            if (light != null) sensors.unregisterListener(this);
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            lux = event.values[0];
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+
+        /** The room's light in lux, or -1 while the phone has no reading. */
+        @JavascriptInterface
+        public float lux() {
+            return lux;
         }
 
         @JavascriptInterface

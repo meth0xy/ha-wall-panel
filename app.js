@@ -33,6 +33,9 @@ const AGENDA_HOLD_MS = 45 * 1000;
 const TASKS_IDLE_MS = 30 * 1000;
 /** At night the dim clock comes back after this long without a touch. */
 const NIGHT_IDLE_MS = 30 * 1000;
+/** Light sensor readings, in lux, that count as a dark room and a lit one. The gap stops flicker at dusk. */
+const ROOM_DARK_LUX = 8;
+const ROOM_LIT_LUX = 15;
 /** The panel reloads itself when a deploy changes these files. */
 const UPDATE_FILES = ["index.html", "config.js", "app.js", "styles.css"];
 const UPDATE_CHECK_MS = 2 * 60 * 1000;
@@ -266,6 +269,17 @@ function minuteOfDay(hhmmText) {
   return h * 60 + m;
 }
 
+let roomLit = false;
+
+/** Without the Android app's light sensor the room counts as dark, and only the time decides. */
+function readRoomLight() {
+  const lux = window.Backlight?.lux?.() ?? -1;
+  if (lux < 0) return false;
+  if (lux >= ROOM_LIT_LUX) roomLit = true;
+  else if (lux <= ROOM_DARK_LUX) roomLit = false;
+  return roomLit;
+}
+
 /** The Android app turns the backlight down with the night clock; a browser has no Backlight. */
 function setNight(on) {
   nightEl.hidden = !on;
@@ -285,7 +299,7 @@ function isNight(now) {
  * click on a tile underneath.
  */
 function updateNight(now) {
-  const night = isNight(now);
+  const night = isNight(now) && !readRoomLight();
   if (night && nightEl.hidden && Date.now() - lastTouch > NIGHT_IDLE_MS) setNight(true);
   else if (!night && !nightEl.hidden) setNight(false);
   if (nightEl.hidden) return;
